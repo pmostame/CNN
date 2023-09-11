@@ -105,7 +105,6 @@ class Net(nn.Module):
 # Making the code device-agnostic
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(f'Device being used is "{device}"')
-torch.device(device)
 
 # Load the model
 net = Net().to(device)
@@ -123,10 +122,8 @@ correct = 0
 total = 0
 with torch.no_grad():
     for batch in testloader:
-        if device == 'cpu':
-            images, labels = batch[0], batch[1]
-        else:
-            images, labels = batch[0].to(device), batch[1].to(device)
+        images, labels = batch[0].to(device), batch[1].to(device)
+        
         # calculate outputs by running images through the network
         outputs = net(images)
         # the class with the highest energy is what we choose as prediction
