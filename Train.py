@@ -112,7 +112,6 @@ class Net(nn.Module):
 # Making the code device-agnostic
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(f'Device being used is "{device}"')
-torch.device(device)
 
 # Load the data
 train_transformer = transforms.Compose( [transforms.ToTensor(), transforms.Normalize((0.5,0.5,0.5),(0.5,0.5,0.5)), transforms.RandomHorizontalFlip(0.5), transforms.RandomErasing(ratio=(0.25, 4), scale = (0.3, 0.5))] )
@@ -148,19 +147,19 @@ for epoch in range(epoch_num):
     running_loss = 0
     accuracy_epoch = 0
     for batch_ind, batch in enumerate(trainloader):
-        if device == 'cpu':
-            images, labels = batch[0], batch[1]
-        else:
-            images, labels = batch[0].to(device), batch[1].to(device)
+        images, labels = batch[0].to(device), batch[1].to(device)
+        
         # refresh optimizer for the new batch
         optimizer.zero_grad()
+        
         # feedforward the batch
         outputs = net(images)
+        
         # backward the error
         loss = criterion(outputs, labels)
         loss.backward()
-        # optimize
         optimizer.step()
+        
         # report error/accuracy of the batch
         running_loss += loss.item()
         loss_batch.append( loss.item() )
@@ -193,16 +192,15 @@ correct = 0
 total = 0
 with torch.no_grad():
     for batch in testloader:
-        if device == 'cpu':
-            images, labels = batch[0], batch[1]
-        else:
-            images, labels = batch[0].to(device), batch[1].to(device)
+        images, labels = batch[0].to(device), batch[1].to(device)
+        
         # calculate outputs by running images through the network
         outputs = net(images)
         # the class with the highest energy is what we choose as prediction
         _, predicted = torch.max(outputs.data, 1)
         total += labels.size(0)
         correct += (predicted == labels).sum().item()
+        
 print('\n ---------------------------------------------------------------------------------------- \n')
 print(f'Accuracy of the network on the 10000 test images: {100 * correct / total} %')
 
